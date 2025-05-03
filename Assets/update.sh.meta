@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: fef03743dff5d43b3a55c6eb0dbb1248
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 12294
+  packageName: CUDLR - Console for Unity Debugging and Logging Remotely
+  packageVersion: 1.0.1
+  assetPath: Assets/update.sh
+  uploadId: 15614
