@@ -1,4 +1,5 @@
-﻿using packt.FoodyGO.Mapping;
+﻿using packt.FoodyGo.Utils;
+using packt.FoodyGO.Mapping;
 using System.Collections;
 using UnityEngine;
 
@@ -10,6 +11,9 @@ namespace packt.FoodyGO.Services
         //Redraw Event
         public delegate void OnRedrawEvent(GameObject g);
         public event OnRedrawEvent OnMapRedraw;
+        [Header("GPS Accuracy")]
+        public float DesiredAccuracyInMeters = 10f;
+        public float UpdateAccuracyInMeters = 10f;
 
         [Header("Map Tile Parameters")]
         public int MapTileScale;
@@ -22,6 +26,8 @@ namespace packt.FoodyGO.Services
         public float Rate = 1f;
         public Vector2[] SimulationOffsets;
         private int simulationIndex;
+        [Tooltip("Enable random simulation")]
+        public bool RandomSimulation = false;
 
         [Header("Exposed for GPS Debugging Purposes Only")]
         public bool IsServiceStarted;
@@ -61,15 +67,36 @@ namespace packt.FoodyGO.Services
             {
                 IsServiceStarted = true;
 
-                if (simulationIndex++ >= SimulationOffsets.Length-1)
+                if (RandomSimulation)
                 {
-                    simulationIndex = 0;
+                    // ランダムな方向に移動
+                    float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+                    float randomDistance = Random.Range(0.00001f, 0.00005f);
+                    Longitude += Mathf.Cos(randomAngle) * randomDistance;
+                    Latitude += Mathf.Sin(randomAngle) * randomDistance;
+                }
+                else
+                {
+                    // SimulationOffsets配列が空の場合はデフォルト移動を使用
+                    if (SimulationOffsets == null || SimulationOffsets.Length == 0)
+                    {
+                        // デフォルトの小さな移動量（東に移動）
+                        Longitude += 0.00001f;
+                        Latitude += 0.00001f;
+                    }
+                    else
+                    {
+                        if (simulationIndex++ >= SimulationOffsets.Length-1)
+                        {
+                            simulationIndex = 0;
+                        }
+
+                        Longitude += SimulationOffsets[simulationIndex].x;
+                        Latitude += SimulationOffsets[simulationIndex].y;
+                    }
                 }
 
-                Longitude += SimulationOffsets[simulationIndex].x;
-                Latitude += SimulationOffsets[simulationIndex].y;
-
-                PlayerTimestamp++;
+                PlayerTimestamp = Epoch.Now;
 
                 yield return new WaitForSeconds(Rate);
             }
@@ -86,8 +113,8 @@ namespace packt.FoodyGO.Services
                 yield break;
             }
 
-            // Start service before querying location
-            Input.location.Start();
+            // Start service before querying location            
+            Input.location.Start(DesiredAccuracyInMeters, UpdateAccuracyInMeters);
 
             // Wait until service initializes
             int maxWait = 20;
@@ -178,6 +205,24 @@ namespace packt.FoodyGO.Services
             var lat2 = GoogleMapUtils.adjustLatByPixels(Latitude, -MapTileSizePixels/2, MapTileZoomLevel);
 
             mapEnvelope = new MapEnvelope(lon1, lat1, lon2, lat2);
+        }
+        
+        // Switch between simulation and real GPS
+        public void SwitchToSimulation(bool enable)
+        {
+            Simulating = enable;
+            if (enable)
+            {
+                StopAllCoroutines();
+                StartCoroutine(StartSimulationService());
+            }
+            else
+            {
+#if !UNITY_EDITOR
+                StopAllCoroutines();
+                StartCoroutine(StartService());
+#endif
+            }
         }
 
         //called when the object is destroyed
