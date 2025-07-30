@@ -2,6 +2,11 @@
 
 namespace packt.FoodyGO.Mapping
 {
+    /// <summary>
+    /// Original Author - RALPH BARBAGALLO
+    /// https://gist.github.com/flarb/4980598
+    /// Source has been extended
+    /// </summary>
     public class GoogleMapUtils
     {
         static float GOOGLE_OFFSET = 268435456f;
@@ -45,6 +50,14 @@ namespace packt.FoodyGO.Mapping
             var offset = adjustLatByPixels(lat, tileSizePixels, zoom);
             var y0 = LatToY(lat); var y1 = LatToY(offset);
             var rng = y1 - y0;
+            
+            // Prevent division by zero
+            if (Mathf.Abs(rng) < 0.001f)
+            {
+                Debug.LogWarning($"CalculateScaleX: Range too small ({rng}), using fallback");
+                return 0.001f; // Use smaller fallback for better scaling
+            }
+            
             return (float)tileSizeUnits / (float)rng;
         }
 
@@ -53,11 +66,18 @@ namespace packt.FoodyGO.Mapping
             var offset = adjustLonByPixels(lon, tileSizePixels, zoom);
             var x0 = LonToX(lon); var x1 = LonToX(offset);
             var rng = x1 - x0;
+            
+            // Prevent division by zero
+            if (Mathf.Abs(rng) < 0.001f)
+            {
+                Debug.LogWarning($"CalculateScaleY: Range too small ({rng}), using fallback");
+                return 0.001f; // Use smaller fallback for better scaling
+            }
+            
             return (float)tileSizeUnits / (float)rng;
         }
 
-        //Vector2 uv = new Vector2((float)myMarker.pixelCoords.x / (float)renderer.material.mainTexture.width, 1f - (float)myMarker.pixelCoords.y / (float)renderer.material.mainTexture.height);
-
+        
     }
 }
 

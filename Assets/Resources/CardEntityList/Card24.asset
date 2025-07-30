@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94d7d66b4465d479b99c36037f8347bc, type: 3}
+  m_Name: Card24
+  m_EditorClassIdentifier: 
+  name: "\u56FD\u969B\u30C7\u30A3\u30B9\u30D7\u30EC\u30A4\u5DE5\u696D\u682A\u5F0F\u4F1A\u793E"
+  hp: 2
+  at: 0
+  cost: 5
+  icon: {fileID: 21300000, guid: 9c21692d6f67b4afc80ca98a9d96c271, type: 3}
+  effectText: "\u653B\u6483\u6642\uFF1A\u81EA\u30EA\u30FC\u30C0\u30FC\u306EHP\u30921\u56DE\u5FA9"
+  multipleEffects:
+  - "\u653B\u6483\u6642\uFF1A\u81EA\u30EA\u30FC\u30C0\u30FC\u306EHP\u30921\u56DE\u5FA9"
+  isEffectValidated: 1

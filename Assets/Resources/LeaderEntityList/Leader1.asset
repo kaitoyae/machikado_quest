@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1de9741100b9846b49ff0e84ce175374, type: 3}
+  m_Name: Leader1
+  m_EditorClassIdentifier: 
+  name: "\u8D64\u9580"
+  hp: 20
+  icon: {fileID: 21300000, guid: 48c06e14600084eacaad9bd348899697, type: 3}
+  ability: "\u516C\u5712\u30AB\u30FC\u30C9\u304C3\u679A\u4EE5\u4E0A\u5834\u306B\u3042\u308B\u3068\u304D\u3001\u81EA\u62E0\u70B9\u306E\u30E9\u30A4\u30D5\u3092\u6BCE\u30BF\u30FC\u30F31\u56DE\u5FA9"

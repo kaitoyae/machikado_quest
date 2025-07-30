@@ -8,6 +8,18 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 4755b35b590504809a7525fd2109c2e2
+  - enabled: 0
+    path: Assets/HomeScreen.unity
+    guid: da4aec9c338cf47eda03343367ad0a2c
+  - enabled: 1
+    path: Assets/Map.unity
+    guid: 1336b32c4b41e49d4b1397ac97a981db
+  - enabled: 0
+    path: Assets/CardBattleScene.unity
+    guid: 6623f9618732c485cafaf55256154d6e
+  - enabled: 1
+    path: Assets/Catch.unity
+    guid: 755ce9781c74b44c69625ad9265a4ace
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 6ee72d15cf39dd748a13eac57397b9af,
       type: 2}

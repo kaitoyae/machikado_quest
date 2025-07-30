@@ -11,14 +11,19 @@ namespace packt.FoodyGO.Services
         //Redraw Event
         public delegate void OnRedrawEvent(GameObject g);
         public event OnRedrawEvent OnMapRedraw;
+        
+        // Map redraw control
+        private float lastMapRedrawTime = 0f;
+        private MapLocation lastMapCenter = new MapLocation(0, 0);
+        private float minDistanceForRedraw = 0.001f;
         [Header("GPS Accuracy")]
         public float DesiredAccuracyInMeters = 10f;
         public float UpdateAccuracyInMeters = 10f;
 
         [Header("Map Tile Parameters")]
-        public int MapTileScale;
-        public int MapTileSizePixels;
-        public int MapTileZoomLevel;
+        public int MapTileScale = 1;
+        public int MapTileSizePixels = 640;
+        public int MapTileZoomLevel = 17;
 
         [Header("GPS Simulation Settings")]
         public bool Simulating;
@@ -26,7 +31,6 @@ namespace packt.FoodyGO.Services
         public float Rate = 1f;
         public Vector2[] SimulationOffsets;
         private int simulationIndex;
-        [Tooltip("Enable random simulation")]
         public bool RandomSimulation = false;
 
         [Header("Exposed for GPS Debugging Purposes Only")]
@@ -52,6 +56,14 @@ namespace packt.FoodyGO.Services
             StartCoroutine(StartService());
             Simulating = false;
 #else            
+            // Set default coordinates if not configured in Inspector
+            if (StartCoordinates.Latitude == 0 && StartCoordinates.Longitude == 0)
+            {
+                StartCoordinates = new MapLocation(139.7671f, 35.6812f); // Tokyo Station (Lon, Lat)
+                print("GPS: Using default Tokyo coordinates");
+            }
+            
+            Simulating = true; // Enable simulation in Unity Editor
             StartCoroutine(StartSimulationService());
             Latitude = StartCoordinates.Latitude;
             Longitude = StartCoordinates.Longitude;
@@ -67,33 +79,26 @@ namespace packt.FoodyGO.Services
             {
                 IsServiceStarted = true;
 
-                if (RandomSimulation)
+                // Only increment index if SimulationOffsets array is valid
+                if (SimulationOffsets != null && SimulationOffsets.Length > 0)
                 {
-                    // ランダムな方向に移動
-                    float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-                    float randomDistance = Random.Range(0.00001f, 0.00005f);
-                    Longitude += Mathf.Cos(randomAngle) * randomDistance;
-                    Latitude += Mathf.Sin(randomAngle) * randomDistance;
+                    if (simulationIndex++ >= SimulationOffsets.Length-1)
+                    {
+                        simulationIndex = 0;
+                    }
+                }
+
+                // Check if SimulationOffsets array is valid
+                if (SimulationOffsets != null && SimulationOffsets.Length > 0)
+                {
+                    Longitude += SimulationOffsets[simulationIndex].x;
+                    Latitude += SimulationOffsets[simulationIndex].y;
                 }
                 else
                 {
-                    // SimulationOffsets配列が空の場合はデフォルト移動を使用
-                    if (SimulationOffsets == null || SimulationOffsets.Length == 0)
-                    {
-                        // デフォルトの小さな移動量（東に移動）
-                        Longitude += 0.00001f;
-                        Latitude += 0.00001f;
-                    }
-                    else
-                    {
-                        if (simulationIndex++ >= SimulationOffsets.Length-1)
-                        {
-                            simulationIndex = 0;
-                        }
-
-                        Longitude += SimulationOffsets[simulationIndex].x;
-                        Latitude += SimulationOffsets[simulationIndex].y;
-                    }
+                    // Use small random movement if no offsets are defined
+                    Longitude += Random.Range(-0.00001f, 0.00001f);
+                    Latitude += Random.Range(-0.00001f, 0.00001f);
                 }
 
                 PlayerTimestamp = Epoch.Now;
@@ -172,9 +177,18 @@ namespace packt.FoodyGO.Services
             else if (Simulating && IsServiceStarted)
             {                                
                 MapLocation loc = new MapLocation(Longitude, Latitude);
-                if (mapEnvelope.Contains(loc) == false)
+                float timeSinceLastRedraw = Time.time - lastMapRedrawTime;
+                float distanceFromLastCenter = (float)MathG.Distance(loc, lastMapCenter);
+                
+                // Only redraw if outside envelope AND enough time passed AND moved significant distance
+                if (mapEnvelope.Contains(loc) == false && 
+                    timeSinceLastRedraw > 3.0f && 
+                    distanceFromLastCenter > minDistanceForRedraw)
                 {
+                    print(string.Format("Map redraw triggered: distance={0:F6}, time={1:F2}s", distanceFromLastCenter, timeSinceLastRedraw));
                     Timestamp = PlayerTimestamp;
+                    lastMapRedrawTime = Time.time;
+                    lastMapCenter = new MapLocation(Longitude, Latitude);
                     CenterMap();
                 }
             }
@@ -188,15 +202,56 @@ namespace packt.FoodyGO.Services
             }
         }
 
+        public void SwitchToSimulation(bool enable)
+        {
+            if (enable)
+            {
+                Simulating = true;
+                IsServiceStarted = false;
+                print("Switching to GPS simulation mode");
+                StartCoroutine(StartSimulationService());
+            }
+            else
+            {
+                Simulating = false;
+                IsServiceStarted = false;
+                print("Switching to real GPS mode");
+                StartCoroutine(StartService());
+            }
+        }
+
         private void CenterMap()
         {
+            // Validate input parameters
+            if (MapTileSizePixels <= 0) MapTileSizePixels = 640;
+            if (MapTileScale <= 0) MapTileScale = 1;
+            if (MapTileZoomLevel <= 0) MapTileZoomLevel = 17;
+            
             mapCenter.Latitude = Latitude;
             mapCenter.Longitude = Longitude;
             mapWorldCenter.x = GoogleMapUtils.LonToX(mapCenter.Longitude);
             mapWorldCenter.y = GoogleMapUtils.LatToY(mapCenter.Latitude);
 
-            mapScale.x = GoogleMapUtils.CalculateScaleX(Latitude, MapTileSizePixels, MapTileScale, MapTileZoomLevel);
-            mapScale.y = GoogleMapUtils.CalculateScaleY(Longitude, MapTileSizePixels, MapTileScale, MapTileZoomLevel);
+            print($"DEBUG: CenterMap params - Size:{MapTileSizePixels}, Scale:{MapTileScale}, Zoom:{MapTileZoomLevel}");
+            print($"DEBUG: GPS coords for scale calc - Lat:{Latitude}, Lon:{Longitude}");
+
+            // Fix coordinate system: X=longitude, Y=latitude
+            mapScale.x = GoogleMapUtils.CalculateScaleY(Longitude, MapTileSizePixels, MapTileScale, MapTileZoomLevel);
+            mapScale.y = GoogleMapUtils.CalculateScaleX(Latitude, MapTileSizePixels, MapTileScale, MapTileZoomLevel);
+            
+            // Add safety check for NaN values
+            if (float.IsNaN(mapScale.x) || mapScale.x == 0)
+            {
+                print("WARNING: mapScale.x is invalid, using fallback value");
+                mapScale.x = 0.001f; // Use smaller fallback for better positioning
+            }
+            if (float.IsNaN(mapScale.y) || mapScale.y == 0)
+            {
+                print("WARNING: mapScale.y is invalid, using fallback value");
+                mapScale.y = 0.001f; // Use smaller fallback for better positioning
+            }
+            
+            print($"DEBUG: MapScale calculated - X:{mapScale.x}, Y:{mapScale.y}");
 
             var lon1 = GoogleMapUtils.adjustLonByPixels(Longitude, -MapTileSizePixels/2, MapTileZoomLevel);
             var lat1 = GoogleMapUtils.adjustLatByPixels(Latitude, MapTileSizePixels/2, MapTileZoomLevel);
@@ -205,24 +260,6 @@ namespace packt.FoodyGO.Services
             var lat2 = GoogleMapUtils.adjustLatByPixels(Latitude, -MapTileSizePixels/2, MapTileZoomLevel);
 
             mapEnvelope = new MapEnvelope(lon1, lat1, lon2, lat2);
-        }
-        
-        // Switch between simulation and real GPS
-        public void SwitchToSimulation(bool enable)
-        {
-            Simulating = enable;
-            if (enable)
-            {
-                StopAllCoroutines();
-                StartCoroutine(StartSimulationService());
-            }
-            else
-            {
-#if !UNITY_EDITOR
-                StopAllCoroutines();
-                StartCoroutine(StartService());
-#endif
-            }
         }
 
         //called when the object is destroyed

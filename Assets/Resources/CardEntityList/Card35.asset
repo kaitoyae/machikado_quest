@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94d7d66b4465d479b99c36037f8347bc, type: 3}
+  m_Name: Card35
+  m_EditorClassIdentifier: 
+  name: "\u5473\u564C\u716E\u8FBC\u7F60"
+  hp: 7
+  at: 5
+  cost: 8
+  icon: {fileID: 21300000, guid: 49f1892c39487434cb7537a7b36b6c7c, type: 3}
+  effectText: "\u6B7B\u4EA1\u6642\uFF1A\u5893\u5730\u306E\u30AB\u30FC\u30C9\u30921\u679A\u624B\u672D\u306B\u623B\u3059"
+  multipleEffects:
+  - "\u6B7B\u4EA1\u6642\uFF1A\u5893\u5730\u306E\u30AB\u30FC\u30C9\u30921\u679A\u624B\u672D\u306B\u623B\u3059"
+  isEffectValidated: 0
