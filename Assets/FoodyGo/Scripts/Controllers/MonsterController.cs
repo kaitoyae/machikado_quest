@@ -16,7 +16,7 @@ namespace packt.FoodyGO.Controllers
         // Use this for initialization
         void Start()
         {
-            Debug.Log($"MonsterController: Start() called on {gameObject.name}");
+            // Debug.Log($"MonsterController: Start() called on {gameObject.name}");
             
             // アニメーターの取得
             animator = GetComponent<Animator>();

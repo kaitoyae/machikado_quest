@@ -27,7 +27,7 @@ public class ScreenOrientationManager : MonoBehaviour
     
     private void SetOrientation()
     {
-        Debug.Log($"Setting orientation to: {desiredOrientation}, Current: {Screen.orientation}");
+        // Debug.Log($"Setting orientation to: {desiredOrientation}, Current: {Screen.orientation}");
         
 #if UNITY_EDITOR
         // Editorでの動作はリフレクションで対応
@@ -48,8 +48,8 @@ public class ScreenOrientationManager : MonoBehaviour
 #endif
         
         // デバッグ情報
-        Debug.Log($"After setting - Current orientation: {Screen.orientation}");
-        Debug.Log($"AutoRotate settings - Portrait: {Screen.autorotateToPortrait}, Landscape: {Screen.autorotateToLandscapeLeft}");
+        // Debug.Log($"After setting - Current orientation: {Screen.orientation}");
+        // Debug.Log($"AutoRotate settings - Portrait: {Screen.autorotateToPortrait}, Landscape: {Screen.autorotateToLandscapeLeft}");
     }
     
 #if UNITY_EDITOR

@@ -325,6 +325,9 @@ namespace StarterAssets
 
         private void Update()
         {
+            // 完全無効化 - SimpleMovementControllerとの競合回避
+            return;
+            
             Debug.Log($"[UPDATE] Update呼び出し - Frame:{Time.frameCount}, Destroying:{_isDestroying}, Quitting:{_isQuitting}, Active:{gameObject.activeInHierarchy}, Enabled:{enabled} on {gameObject.name}");
             
             // ULTIMATE DEFENSE: Multiple early exit conditions
@@ -363,6 +366,9 @@ namespace StarterAssets
         
         private void FixedUpdate()
         {
+            // 🚨 完全無効化 - SimpleMovementControllerとの競合回避
+            return;
+            
             Debug.Log($"[FIXED_UPDATE] FixedUpdate呼び出し - Frame:{Time.fixedTime}, Destroying:{_isDestroying}, Quitting:{_isQuitting} on {gameObject.name}");
             
             // ULTIMATE DEFENSE: Multiple early exit conditions
@@ -447,7 +453,7 @@ namespace StarterAssets
         {
             _isQuitting = true;
             _isDestroying = true; // Double safety
-            Debug.Log($"[LIFECYCLE] ThirdPersonController.OnApplicationQuit called on {gameObject.name}");
+            // Debug.Log($"[LIFECYCLE] ThirdPersonController.OnApplicationQuit called on {gameObject.name}");
         }
         
         private void OnApplicationPause(bool pauseStatus)

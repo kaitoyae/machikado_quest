@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using StarterAssets;
 using packt.FoodyGO.Mapping;
 using packt.FoodyGO.Services;
 
@@ -9,8 +8,7 @@ namespace packt.FoodyGO.Controllers
     {
         public GPSLocationService gpsLocationService;
         private double lastTimestamp;        
-        private StarterAssets.ThirdPersonController thirdPersonController;
-        private StarterAssetsInputs starterAssetsInputs;
+        private InputCoordinator inputCoordinator;
         private Vector3 target;
         
         [Header("Camera Settings")]
@@ -46,11 +44,20 @@ namespace packt.FoodyGO.Controllers
         // Use this for initialization
         void Start()
         {
-            Input.compass.enabled = true;
-            thirdPersonController = GetComponent<ThirdPersonController>();
-            starterAssetsInputs = GetComponent<StarterAssetsInputs>();
+            // 🔥 PC環境対応：モバイルデバイスでのみコンパスを有効化
+            if (Application.isMobilePlatform)
+            {
+                Input.compass.enabled = true;
+                Debug.Log($"[GPS_CONTROLLER] モバイル環境でコンパス有効化");
+            }
+            else
+            {
+                Debug.Log($"[GPS_CONTROLLER] PC環境のためコンパス無効化");
+            }
             
-            Debug.Log($"[GPS_CONTROLLER] 初期化完了 - ThirdPersonController:{thirdPersonController != null}, Input:{starterAssetsInputs != null}");
+            inputCoordinator = GetComponent<InputCoordinator>();
+            
+            Debug.Log($"[GPS_CONTROLLER] 初期化完了 - InputCoordinator:{inputCoordinator != null}");
             
             if (gpsLocationService != null)
             {
@@ -85,16 +92,12 @@ namespace packt.FoodyGO.Controllers
         // Update is called once per frame
         void Update()
         {
-            // GPS移動が無効の場合は、GPS処理を完全にスキップ
+            // GPS移動が無効の場合は、入力システムとコンパス回転に一切干渉しない
             if (!enableGPSMovement)
             {
-                Debug.Log($"[GPS_CONTROLLER] GPS移動無効 - コンパス処理のみ実行");
-                
-                // Orient an object to point to magnetic north and adjust for map reversal
-                var heading = 180 + Input.compass.magneticHeading;
-                var rotation = Quaternion.AngleAxis(heading, Vector3.up);
-                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.fixedTime * .001f);
-                return;
+                // 🔥 修正：GPS無効時はコンパス回転も無効にして、プレイヤー入力による回転に任せる
+                Debug.Log($"[GPS_CONTROLLER] GPS移動無効 - 入力システムに完全に任せる");
+                return; // 重要：GPS無効時は一切の処理をしない
             }
             
             // GPS移動が有効な場合のみGPS処理を実行
@@ -114,8 +117,8 @@ namespace packt.FoodyGO.Controllers
             if (Vector3.Distance(target, transform.position) > minDistanceToMove)
             {
                 var move = target - transform.position;
-                // ThirdPersonControllerの入力システムを使用
-                if (starterAssetsInputs != null && thirdPersonController != null)
+                // InputCoordinatorを使用した新物理システム対応
+                if (inputCoordinator != null)
                 {
                     move.y = 0; // 水平方向のみ
                     Vector3 moveDirection = move.normalized;
@@ -138,25 +141,45 @@ namespace packt.FoodyGO.Controllers
                         // 移動速度を調整
                         float speedMultiplier = Mathf.Min(movementAmplification, move.magnitude / minDistanceToMove);
                         
-                        // StarterAssetsInputsに入力を設定
-                        starterAssetsInputs.move = new Vector2(rightAmount, forwardAmount) * speedMultiplier;
+                        // InputCoordinatorに直接入力を設定
+                        inputCoordinator.move = new Vector2(rightAmount, forwardAmount) * speedMultiplier;
                     }
                     
-                    Debug.Log($"[GPS_CONTROLLER] GPS移動入力設定 - Target:{target}, Move:{starterAssetsInputs.move}");
+                    Debug.Log($"[GPS_CONTROLLER] GPS移動入力設定 - Target:{target}, Move:{inputCoordinator.move}");
                 }
             }
             else
             {
-                // 目標地点に到達したら入力をクリア
-                if (starterAssetsInputs != null)
+                // GPS移動が有効な場合のみ入力をクリア（重要な変更）
+                if (inputCoordinator != null)
                 {
-                    starterAssetsInputs.move = Vector2.zero;
+                    inputCoordinator.move = Vector2.zero;
                 }
                 
-                // Orient an object to point to magnetic north and adjust for map reversal
-                var heading = 180 + Input.compass.magneticHeading;
-                var rotation = Quaternion.AngleAxis(heading, Vector3.up);
-                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.fixedTime * .001f);
+                // 🔥 モバイル環境でのみコンパス回転を実行
+                if (Application.isMobilePlatform)
+                {
+                    var heading = 180 + Input.compass.magneticHeading;
+                    var rotation = Quaternion.AngleAxis(heading, Vector3.up);
+                    
+                    // 🔥 完全Rigidbodyベース：物理エンジン経由での回転
+                    Rigidbody rb = GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        // Rigidbody.MoveRotation使用（物理的に正しい）
+                        Quaternion targetRotation = Quaternion.Slerp(rb.rotation, rotation, Time.deltaTime * 0.5f);
+                        rb.MoveRotation(targetRotation);
+                        Debug.Log($"[GPS_PHYSICS] Rigidbody回転使用（完全物理準拠） - Heading:{heading}");
+                    }
+                    else
+                    {
+                        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 0.5f);
+                    }
+                }
+                else
+                {
+                    Debug.Log($"[GPS_CONTROLLER] PC環境のためコンパス回転をスキップ");
+                }
             }
         }
     }

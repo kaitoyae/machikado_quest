@@ -2,7 +2,10 @@
   "dependencies": {
     "com.justinpbarnett.unity-mcp": "https://github.com/justinpbarnett/unity-mcp.git?path=/UnityMcpBridge",
     "com.unity.2d.sprite": "1.0.0",
+    "com.unity.2d.tilemap": "1.0.0",
+    "com.unity.ads": "4.4.2",
     "com.unity.ai.navigation": "2.0.6",
+    "com.unity.analytics": "3.8.1",
     "com.unity.burst": "1.8.19",
     "com.unity.cinemachine": "2.10.3",
     "com.unity.collab-proxy": "2.7.1",
@@ -17,6 +20,7 @@
     "com.unity.multiplayer.center": "1.0.0",
     "com.unity.nuget.mono-cecil": "1.11.4",
     "com.unity.package-validation-suite": "0.22.0-preview",
+    "com.unity.purchasing": "4.12.2",
     "com.unity.render-pipelines.core": "17.0.4",
     "com.unity.render-pipelines.universal": "17.0.4",
     "com.unity.render-pipelines.universal-config": "17.0.3",

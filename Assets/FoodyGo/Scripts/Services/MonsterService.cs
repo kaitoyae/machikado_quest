@@ -60,7 +60,7 @@ namespace packt.FoodyGO.Services
                 gpsLocationService.PlayerTimestamp > lastTimestamp)
             {
                 lastTimestamp = gpsLocationService.PlayerTimestamp;
-                print($"MonsterService: Checking monsters at {gpsLocationService.Latitude}, {gpsLocationService.Longitude}");
+                // print($"MonsterService: Checking monsters at {gpsLocationService.Latitude}, {gpsLocationService.Longitude}");
 
                 //update the monsters around the player
                 CheckMonsters();
@@ -70,7 +70,7 @@ namespace packt.FoodyGO.Services
         private void CheckMonsters()
         {
             var randomValue = Random.value;
-            print($"CheckMonsters: Random value={randomValue}, spawnRate={monsterSpawnRate}, will spawn={(randomValue < monsterSpawnRate)}");
+            // print($"CheckMonsters: Random value={randomValue}, spawnRate={monsterSpawnRate}, will spawn={(randomValue < monsterSpawnRate)}");
             
             if (randomValue < monsterSpawnRate)
             {
@@ -82,11 +82,11 @@ namespace packt.FoodyGO.Services
                     spawnTimestamp = gpsLocationService.PlayerTimestamp
                 };
                 monsters.Add(monster);
-                print($"MonsterService: Created monster at lat: {mlat}, lon: {mlon}, total monsters: {monsters.Count}");
+                // print($"MonsterService: Created monster at lat: {mlat}, lon: {mlon}, total monsters: {monsters.Count}");
             }
             else
             {
-                print($"CheckMonsters: No monster spawned this frame. Total monsters: {monsters.Count}");
+                // print($"CheckMonsters: No monster spawned this frame. Total monsters: {monsters.Count}");
             }
 
             //store players location for easy access in distance calculations
@@ -97,7 +97,7 @@ namespace packt.FoodyGO.Services
             foreach (Monster m in monsters)
             {
                 var d = MathG.Distance(m.location, playerLocation);
-                print($"Monster distance check: {d}m (see: {monsterSeeDistance}m, hear: {monsterHearDistance}m)");
+                // print($"Monster distance check: {d}m (see: {monsterSeeDistance}m, hear: {monsterHearDistance}m)");
                 
                 // Calculate footstep range (1-3 based on distance)
                 if (d < 50f) m.footstepRange = 1;
@@ -110,18 +110,18 @@ namespace packt.FoodyGO.Services
                     m.lastSeenTimestamp = now;
                     if (m.gameObject == null) 
                     {
-                        print($"Spawning monster at distance {d}m");
+                        // print($"Spawning monster at distance {d}m");
                         SpawnMonster(m);
                     }
                     
-                    print("Monster seen, distance " + d + " started at " + m.spawnTimestamp);
+                    // print("Monster seen, distance " + d + " started at " + m.spawnTimestamp);
                     continue;
                 }
 
                 if (d < monsterHearDistance)
                 {
                     m.lastHeardTimestamp = now;
-                    print("Monster heard, distance " + d + " started at " + m.spawnTimestamp);
+                    // print("Monster heard, distance " + d + " started at " + m.spawnTimestamp);
                     continue;
                 }
 
@@ -145,10 +145,10 @@ namespace packt.FoodyGO.Services
             var x = deltaLon * metersPerDegree;
             var z = deltaLat * metersPerDegree;
             
-            print($"Monster GPS: lon={longitude:F6}, lat={latitude:F6}");
-            print($"Player GPS: lon={playerLon:F6}, lat={playerLat:F6}");
-            print($"Delta: dLon={deltaLon:F6}, dLat={deltaLat:F6}");
-            print($"World position: x={x:F2}, z={z:F2}");
+            // print($"Monster GPS: lon={longitude:F6}, lat={latitude:F6}");
+            // print($"Player GPS: lon={playerLon:F6}, lat={playerLat:F6}");
+            // print($"Delta: dLon={deltaLon:F6}, dLat={deltaLat:F6}");
+            // print($"World position: x={x:F2}, z={z:F2}");
             
             return new Vector3(x, 1f, z);
         }
@@ -189,7 +189,7 @@ namespace packt.FoodyGO.Services
                 collider.isTrigger = false;  // Make sure it's not a trigger
             }
             
-            print($"SpawnMonster: Spawned at world position {position}");
+            // print($"SpawnMonster: Spawned at world position {position}");
         }
     }
 }

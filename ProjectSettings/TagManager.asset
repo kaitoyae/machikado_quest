@@ -4,7 +4,6 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - DropZone
   - CinemachineTarget
   layers:
   - Default
@@ -13,10 +12,10 @@ TagManager:
   - 
   - Water
   - UI
-  - Ground
-  - Monster
-  - Player
-  - Ball
+  - 
+  - 
+  - 
+  - 
   - 
   - 
   - 
